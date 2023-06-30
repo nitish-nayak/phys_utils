@@ -36,3 +36,24 @@ function set_proxy {
     voms-proxy-init -noregen -voms fermilab:/fermilab/uboone/Role=Production
   fi
 }
+
+function jump {
+  exp=""
+  if [[ `hostname` =~ "uboone" ]]; then
+    exp="uboone"
+  else
+    exp="dune"
+  fi
+  pnfspath="/pnfs/"$exp"/scratch/users/"$USER
+  apppath="/"$exp"/app/users/"$USER
+  datapath="/"$exp"/data/users/"$USER
+  
+  opt=$1
+  if [[ $opt == "data" ]]; then
+    cd $datapath
+  elif [[ $opt == "pnfs" ]]; then
+    cd $pnfspath
+  else
+    cd $apppath
+  fi
+}
