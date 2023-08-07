@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # script inspired by A. Aurisano's script in NOvA
 # modified to allow more control for number of output files
-# also, make running threads access new chunks on demand if available 
+# also, make running threads access new chunks on demand if available
 
 import sys
 import threading
@@ -9,20 +9,25 @@ import subprocess
 import argparse
 import os
 import errno
-import Queue
 import glob
 import time
 
-workQueue = Queue.Queue()
+try:
+    import queue
+except ImportError:
+    import Queue as queue
+
+
+workQueue = queue.Queue()
 exitFlag = 0
 
 def chunks(l, n):
-    return [l[i::n] for i in xrange(n)]
+    return [l[i::n] for i in range(n)]
 
 def haddF(ofName = None, ifList = [], overwrite = False ):
     "hadd a list of files, will be dumped in to a thread"
 
-    print ofName
+    print (ofName)
     FNULL = open(os.devnull, 'w')
 
     cmd = ['hadd']
@@ -38,20 +43,20 @@ def haddF(ofName = None, ifList = [], overwrite = False ):
     subprocess.call(cmd, stdout=FNULL)
 
 class haddThread(threading.Thread):
-  
+
     def __init__(self, threadId, wQ):
         threading.Thread.__init__(self)
         self.wQ = wQ
         self.threadId = threadId
-    
+
     def run(self):
         worker(self.wQ, self.threadId)
-      
+
 def worker(q, i):
     while not exitFlag:
         queueLock.acquire()
         if not workQueue.empty():
-            item = q.get() 
+            item = q.get()
             queueLock.release()
             #  print "Processing thread ", i, " for ", item[0], "\n"
             haddF( item[0], item[1], item[2] )
@@ -90,7 +95,7 @@ if args.nOutputs == 1:
     maxFiles = 50
     nChunks = int(nTotal/maxFiles)
 
-print nTotal, "files to hadd into ", nChunks, " file(s) using ", args.nThreads, " thread(s)"
+print (nTotal, "files to hadd into ", nChunks, " file(s) using ", args.nThreads, " thread(s)")
 
 partList = []
 jList = chunks( inList, nChunks )
